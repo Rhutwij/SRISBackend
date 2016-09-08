@@ -1,0 +1,98 @@
+INSERT INTO Colleges(NAME,TYPE) VALUES('Applied Science & Technology','Science');
+INSERT INTO Colleges(NAME,TYPE) VALUES('Saunders College','Business');
+INSERT INTO Colleges(NAME,TYPE) VALUES('Kate Gleason','Engineering');
+INSERT INTO Colleges(NAME,TYPE) VALUES('Golisano College Eng','Computers');
+INSERT INTO Colleges(NAME,TYPE) VALUES('College Health & Sciences','health');
+INSERT INTO Colleges(NAME,TYPE) VALUES('College Of Imaging Arts','Arts');
+INSERT INTO Colleges(NAME,TYPE) VALUES('College of Liberal Arts','Liberal Arts');
+INSERT INTO Colleges(NAME,TYPE) VALUES('College of Science','Science & tech');
+INSERT INTO Colleges(NAME,TYPE) VALUES('All','None');
+
+Roles;
+INSERT INTO roles(Name) VALUES('student');
+INSERT INTO roles(Name) VALUES('demouser');
+INSERT INTO roles(Name) VALUES('professor');
+INSERT INTO roles(Name) VALUES('admin');
+
+Subjects:
+INSERT INTO Subjects(Name,CollegeId) VALUES("Parallel Computing",4);
+INSERT INTO Subjects(Name,CollegeId) VALUES("Algorithms",4);
+INSERT INTO Subjects(Name,CollegeId) VALUES("Data Structures",4);
+INSERT INTO Subjects(Name,CollegeId) VALUES("Databases",4);
+INSERT INTO Subjects(Name,CollegeId) VALUES("Machine Learning",4);
+INSERT INTO Subjects(Name,CollegeId) VALUES("Information Retrieval",4);
+INSERT INTO Subjects(Name,CollegeId) VALUES("Graphics",4);
+INSERT INTO Subjects(Name,CollegeId) VALUES("Desktop Apps",4);
+INSERT INTO Subjects(Name,CollegeId) VALUES("Mobile Apps",4);
+INSERT INTO Subjects(Name,CollegeId) VALUES("Java",4);
+INSERT INTO Subjects(Name,CollegeId) VALUES("C++",4);
+INSERT INTO Subjects(Name,CollegeId) VALUES("PHP",4);
+INSERT INTO Subjects(Name,CollegeId) VALUES("Python",4);
+INSERT INTO Subjects(Name,CollegeId) VALUES("JavaScript",4);
+INSERT INTO Subjects(Name,CollegeId) VALUES("Objective C",4);
+INSERT INTO Subjects(Name,CollegeId) VALUES("Web Apps",4);
+INSERT INTO Subjects(Name,CollegeId) VALUES("Imaging",4);
+INSERT INTO Subjects(Name,CollegeId) VALUES("FrontEnd",4);
+INSERT INTO Subjects(Name,CollegeId) VALUES("Biotech",7);
+INSERT INTO Subjects(Name,CollegeId) VALUES("Bioinformatics",7);
+INSERT INTO Subjects(Name,CollegeId) VALUES("Imaging Science",7);
+
+
+DocFormats;
+INSERT INTO DocFormats(FormatId,Name) VALUES(1,".docx");
+INSERT INTO DocFormats(FormatId,Name) VALUES(2,".txt");
+INSERT INTO DocFormats(FormatId,Name) VALUES(3,".pdf");
+
+Users;
+ INSERT INTO users(Username,Password,RoleId,RegDate,LastLogin,Ban,CollegeId,Rating) VALUES('demo','demo',2,NOW(),NOW(),0,4,0);
+ INSERT INTO users(Username,Password,RoleId,RegDate,LastLogin,Ban,CollegeId,Rating) VALUES('student','student',1,NOW(),NOW(),0,4,0);
+ INSERT INTO users(Username,Password,RoleId,RegDate,LastLogin,Ban,CollegeId,Rating) VALUES('student1','student1',1,NOW(),NOW(),0,7,0);
+ INSERT INTO users(Username,Password,RoleId,RegDate,LastLogin,Ban,CollegeId,Rating) VALUES('admin','admin',4,NOW(),NOW(),0,9,0);
+ INSERT INTO users(Username,Password,RoleId,RegDate,LastLogin,Ban,CollegeId,Rating) VALUES('prof','prof',3,NOW(),NOW(),0,4,0);
+ 
+ 
+ 	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/colleges/{id}/professors")
+	public Response getProfessorByCollegeId(@PathParam("id") int id)
+			throws Exception {
+		Response rb = null;
+		String colleges = null;
+		Colleges colobj = new Colleges();
+		log.info("Created college object");
+		colleges = colobj.getProfessorsListByCollege(id);
+		rb = Response.ok(colleges).build();
+		log.info("returning college" + id);
+		return rb;
+	}
+        
+        	public String getProfessorsListByCollege(int id) {
+		PreparedStatement query = null;
+		Connection conn = null;
+		ToJSON converter = new ToJSON();
+		JsonArray json = new JsonArray();
+		String returnString = null;
+
+		try {
+			conn = new Colleges().getConnectionWithPooling();
+			query = conn.prepareStatement("SELECT Username FROM Users WHERE CollegeId=? AND RoleId=3");
+			query.setInt(1, id);
+			ResultSet rs = query.executeQuery();
+			json = converter.toJsonArray(rs);
+			returnString = json.toString();
+			Utils.closeQuietly(conn);
+		} catch (Exception e) {
+			log.info("Exception thrown method getProfessorsListByCollege"
+					+ e.getMessage());
+			returnString = "Service Not Available or college not found";
+		}
+		finally
+		{
+			Utils.closeQuietly(conn);
+		}
+		log.info("Returning ListOfProfessorByCollege");
+		return returnString;
+	}
+        
+        
+
